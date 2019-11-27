@@ -9,10 +9,21 @@ import (
 )
 
 var (
-	d = flag.String("d", ".", "Directory to process")
-	a = flag.Bool("a", false, "Print all info")
-	h = flag.Bool("h", false, "Print storage info")
+	d     = flag.String("d", ".", "Directory to process")
+	a     = flag.Bool("a", false, "Print all info")
+	h     = flag.Bool("h", false, "Print storage info")
+	msort = flag.Bool("sort", false, "Sort for modification date")
 )
+
+func sort(files []os.FileInfo) {
+	for j := 0; j < len(files); j++ {
+		for i := 0; i < len(files)-j-1; i++ {
+			if files[i].ModTime().Before(files[i+1].ModTime()) {
+				files[i], files[i+1] = files[i+1], files[i]
+			}
+		}
+	}
+}
 
 func hrSize(fsize int64) string {
 	if fsize/1048576 > 0 {
@@ -39,7 +50,9 @@ func printAll(file os.FileInfo) {
 func main() {
 	flag.Parse()
 	files, _ := ioutil.ReadDir(*d)
-
+	if *msort == true {
+		sort(files)
+	}
 	for _, file := range files {
 		if *a {
 			printAll(file)
